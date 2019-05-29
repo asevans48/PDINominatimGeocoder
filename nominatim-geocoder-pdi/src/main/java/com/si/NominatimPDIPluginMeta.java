@@ -31,6 +31,7 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.row.value.ValueMetaFactory;
 import org.pentaho.di.core.row.value.ValueMetaInteger;
+import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
@@ -244,11 +245,11 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
 
   public void getFields( RowMetaInterface rowMeta, String origin, RowMetaInterface[] info, StepMeta nextStep,
                          VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
-    ValueMetaInteger v0 = new ValueMetaInteger(latitudeField);
+    ValueMetaString v0 = new ValueMetaString(latitudeField);
     v0.setOrigin(origin);
     rowMeta.addValueMeta(v0);
 
-    ValueMetaInteger v1 = new ValueMetaInteger(longitudeField);
+    ValueMetaString v1 = new ValueMetaString(longitudeField);
     v0.setOrigin(origin);
     rowMeta.addValueMeta(v1);
   }
