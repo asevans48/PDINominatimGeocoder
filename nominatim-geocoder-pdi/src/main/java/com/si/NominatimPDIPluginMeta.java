@@ -18,16 +18,19 @@
  */
 package com.si;
 
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.annotations.Step;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
+import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.row.value.ValueMetaFactory;
+import org.pentaho.di.core.row.value.ValueMetaInteger;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
@@ -53,6 +56,16 @@ import java.util.List;
 @Step( id = "NominatimPDIPlugin", image = "NominatimPDIPlugin.svg", name = "Nominatim Geocode",
     description = "Nominatim geocoder.", categoryDescription = "Transform" )
 public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInterface {
+  private String nominatimUrl = "";
+  private String mapboxUrl = "";
+  private String mapBoxKey = "";
+  private String streetField = "";
+  private String stateField = "";
+  private String cityField = "";
+  private String zipField = "";
+  private String latitudeField = "";
+  private String longitudeField = "";
+  private boolean useMapBoxFallbackIfPresent = true;
   
   private static Class<?> PKG = NominatimPDIPlugin.class; // for i18n purposes, needed by Translator2!!   $NON-NLS-1$
 
@@ -60,7 +73,87 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
     super(); // allocate BaseStepMeta
   }
 
-  public void loadXML( Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
+  public String getStreetField() {
+    return streetField;
+  }
+
+  public void setStreetField(String streetField) {
+    this.streetField = streetField;
+  }
+
+  public String getStateField() {
+    return stateField;
+  }
+
+  public void setStateField(String stateField) {
+    this.stateField = stateField;
+  }
+
+  public String getCityField() {
+    return cityField;
+  }
+
+  public void setCityField(String cityField) {
+    this.cityField = cityField;
+  }
+
+  public String getZipField() {
+    return zipField;
+  }
+
+  public void setZipField(String zipField) {
+    this.zipField = zipField;
+  }
+
+  public String getNominatimUrl() {
+    return nominatimUrl;
+  }
+
+  public void setNominatimUrl(String nominatimUrl) {
+    this.nominatimUrl = nominatimUrl;
+  }
+
+  public String getMapboxUrl() {
+    return mapboxUrl;
+  }
+
+  public void setMapboxUrl(String mapboxUrl) {
+    this.mapboxUrl = mapboxUrl;
+  }
+
+  public String getMapBoxKey() {
+    return mapBoxKey;
+  }
+
+  public void setMapBoxKey(String mapBoxKey) {
+    this.mapBoxKey = mapBoxKey;
+  }
+
+  public String getLatitudeField() {
+    return latitudeField;
+  }
+
+  public void setLatitudeField(String latitudeField) {
+    this.latitudeField = latitudeField;
+  }
+
+  public String getLongitudeField() {
+    return longitudeField;
+  }
+
+  public void setLongitudeField(String longitudeField) {
+    this.longitudeField = longitudeField;
+  }
+
+  public boolean isUseMapBoxFallbackIfPresent() {
+    return useMapBoxFallbackIfPresent;
+  }
+
+  public void setUseMapBoxFallbackIfPresent(boolean useMapBoxFallbackIfPresent) {
+    this.useMapBoxFallbackIfPresent = useMapBoxFallbackIfPresent;
+  }
+
+  public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
     readData( stepnode );
   }
 
@@ -68,24 +161,96 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
     Object retval = super.clone();
     return retval;
   }
-  
-  private void readData( Node stepnode ) {
-    // Parse the XML (starting with the given stepnode) to extract the step metadata (into member variables, for example)
+
+  public String getXML() throws KettleValueException {
+    StringBuilder xml = new StringBuilder();
+    xml.append( XMLHandler.addTagValue( "nominatimUrl", nominatimUrl ) );
+    xml.append(XMLHandler.addTagValue("mapboxUrl", mapboxUrl));
+    xml.append(XMLHandler.addTagValue("mapboxKey", mapBoxKey));
+    xml.append(XMLHandler.addTagValue("streetField", streetField));
+    xml.append(XMLHandler.addTagValue("cityField", cityField));
+    xml.append(XMLHandler.addTagValue("stateField", stateField));
+    xml.append(XMLHandler.addTagValue("zipField", zipField));
+    xml.append(XMLHandler.addTagValue("useMapBox", useMapBoxFallbackIfPresent));
+    xml.append(XMLHandler.addTagValue("latitudeField", latitudeField));
+    xml.append(XMLHandler.addTagValue("longitudeField", longitudeField));
+    return xml.toString();
+  }
+
+  private void readData( Node stepnode ) throws KettleXMLException {
+    try {
+      setNominatimUrl(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "nominatimUrl")), ""));
+      setMapBoxKey(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "mapboxUrl")), ""));
+      setMapboxUrl(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "mapboxKey")), ""));
+      setStreetField(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "streetField")), ""));
+      setCityField(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "cityField")), ""));
+      setStateField(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "stateField")), ""));
+      setZipField(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "zipField")), ""));
+      setLatitudeField(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "latitudeField")), ""));
+      setLongitudeField(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "longitudeField")), ""));
+      setUseMapBoxFallbackIfPresent(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "useMapBox")), "N").equals("Y"));
+    } catch ( Exception e ) {
+      throw new KettleXMLException( "Demo plugin unable to read step info from XML node", e );
+    }
   }
 
   public void setDefault() {
+    this.nominatimUrl = "";
+    this.useMapBoxFallbackIfPresent = true;
+    this.mapBoxKey = "";
+    this.mapboxUrl = "";
+    this.streetField = "";
+    this.cityField = "";
+    this.stateField = "";
+    this.zipField = "";
+    this.latitudeField = "";
+    this.longitudeField = "";
   }
 
   public void readRep( Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases ) throws KettleException {
+    try {
+      this.nominatimUrl  = rep.getStepAttributeString(id_step, "nominatimUrl" );
+      this.useMapBoxFallbackIfPresent = rep.getStepAttributeBoolean(id_step, "useMapBox");
+      this.mapBoxKey = rep.getStepAttributeString(id_step, "mapboxKey");
+      this.mapboxUrl = rep.getStepAttributeString(id_step, "mapboxUrl");
+      this.streetField = rep.getStepAttributeString(id_step, "streetField");
+      this.cityField = rep.getStepAttributeString(id_step, "cityField");
+      this.stateField = rep.getStepAttributeString(id_step, "stateField");
+      this.zipField = rep.getStepAttributeString(id_step, "zipField");
+      this.latitudeField = rep.getStepAttributeString(id_step, "latitudeField");
+      this.longitudeField = rep.getStepAttributeString(id_step, "longitudeField");
+    } catch ( Exception e ) {
+      throw new KettleException( "Unable to load step from repository", e );
+    }
   }
   
   public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step )
     throws KettleException {
+    try {
+      rep.saveStepAttribute( id_transformation, id_step, "nominatimUrl", nominatimUrl);
+      rep.saveStepAttribute( id_transformation, id_step, "useMapBox", useMapBoxFallbackIfPresent);
+      rep.saveStepAttribute( id_transformation, id_step, "mapboxKey", mapBoxKey);
+      rep.saveStepAttribute( id_transformation, id_step, "mapboxUrl", mapboxUrl);
+      rep.saveStepAttribute( id_transformation, id_step, "streetField", streetField);
+      rep.saveStepAttribute( id_transformation, id_step, "cityField", cityField);
+      rep.saveStepAttribute( id_transformation, id_step, "stateField", stateField);
+      rep.saveStepAttribute( id_transformation, id_step, "zipField", zipField);
+      rep.saveStepAttribute( id_transformation, id_step, "latitudeField", latitudeField);
+      rep.saveStepAttribute( id_transformation, id_step, "longitudeField", longitudeField);
+    } catch ( Exception e ) {
+      throw new KettleException( "Unable to save step into repository: " + id_step, e );
+    }
   }
-  
-  public void getFields( RowMetaInterface rowMeta, String origin, RowMetaInterface[] info, StepMeta nextStep, 
-    VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
-    // Default: nothing changes to rowMeta
+
+  public void getFields( RowMetaInterface rowMeta, String origin, RowMetaInterface[] info, StepMeta nextStep,
+                         VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
+    ValueMetaInteger v0 = new ValueMetaInteger(latitudeField);
+    v0.setOrigin(origin);
+    rowMeta.addValueMeta(v0);
+
+    ValueMetaInteger v1 = new ValueMetaInteger(longitudeField);
+    v0.setOrigin(origin);
+    rowMeta.addValueMeta(v1);
   }
   
   public void check( List<CheckResultInterface> remarks, TransMeta transMeta, 
