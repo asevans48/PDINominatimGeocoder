@@ -27,6 +27,7 @@ import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.*;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Describe your step plugin.
@@ -59,8 +60,23 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
 
 
   private String[] gecodeMapBox(String address, String city, String state, String zip){
-
-    return new String[]{};
+    String[] latLong = new String[2];
+    if(meta.getMapboxUrl() != null && meta.getMapboxUrl().trim().length() > 0) {
+      try {
+        URI uri = new URI(meta.getMapboxUrl());
+        data.mapBoxRequest(uri, meta.getMapBoxKey(), address, city, state, zip);
+      }catch(URISyntaxException e){
+        if(isBasic()){
+          logBasic("Failed to Parse Mapbox URL");
+          e.printStackTrace();
+        }
+      }catch(Exception e){
+        if(isBasic()){
+          logBasic("Failed to Obtain mapbox geocode data");
+        }
+      }
+    }
+    return latLong;
   }
 
 
@@ -123,16 +139,16 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
    * @param rmi         The row meta interface
    * @return            Whether the address was parsed
    */
-  private boolean wasAddressObtained(Object[] r, RowMetaInterface rmi){
+  private boolean wasGeocodeObtained(Object[] r, RowMetaInterface rmi){
     boolean found = false;
     String latField = meta.getLatitudeField();
     String lonField = meta.getLongitudeField();
     int idx = rmi.indexOfValue(latField);
 
     if(idx > -1) {
-      if(r[idx] == null || ((String) r[idx]) != null){
+      if(r[idx] != null){
         idx = rmi.indexOfValue(lonField);
-        if(r[idx] == null || ((String) r[idx]) != null) {
+        if(r[idx] == null) {
           found = true;
         }
       }
@@ -186,6 +202,22 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
   }
 
   /**
+   * Wait for a specified time to slow down request rate.
+   *
+   * @param waitTime        The wait time long
+   */
+  private void doWait(long waitTime){
+    try {
+      Thread.sleep(waitTime);
+    }catch(InterruptedException e){
+      if(isBasic()){
+        logBasic(String.format("Failed to Wait for %d seconds in Geocoder", waitTime));
+        e.printStackTrace();
+      }
+    }
+  }
+
+  /**
    * Geocode the address in a row
    *
    * @param inrow       The input row
@@ -209,16 +241,22 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
 
       if (meta.getNominatimUrl() != null) {
         String[] latLong = this.geocodeNominatim(streetO, cityO, stateO, zip);
-        if(latLong != null && latLong.length == 2){
+        if(meta.getPostNominatimWaitMillis() > 0L){
+          this.doWait(meta.getPostNominatimWaitMillis());
+        }
+        if(latLong != null && latLong.length == 2 && (latLong[0] != null || latLong[1] != null)){
           outrow = this.packageRow(latLong, outrow, rmi);
         }else{
           fallThrough = false;
         }
       }
 
-      if (fallThrough) {
+      if (fallThrough && !this.wasGeocodeObtained(outrow, rmi)) {
         String[] latLong = this.gecodeMapBox(streetO, cityO, stateO, zip);
-        if(latLong != null && latLong.length == 2) {
+        if(meta.getPostMapboxWaitMillis() > 0L){
+          this.doWait(meta.getPostMapboxWaitMillis());
+        }
+        if(latLong != null && latLong.length == 2 && (latLong[0] != null || latLong[1] != null)) {
           outrow = this.packageRow(latLong, outrow, rmi);
         }
       }

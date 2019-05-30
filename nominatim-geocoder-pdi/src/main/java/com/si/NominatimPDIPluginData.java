@@ -18,8 +18,7 @@
  */
 package com.si;
 
-import com.mapbox.api.geocoding.v5.MapboxGeocoding;
-import com.mapbox.api.geocoding.v5.models.GeocodingResponse;
+import net.sf.saxon.functions.Parse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -27,15 +26,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +40,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.CountDownLatch;
+import java.net.URL;
 
 
 public class NominatimPDIPluginData extends BaseStepData implements StepDataInterface {
@@ -71,11 +68,14 @@ public class NominatimPDIPluginData extends BaseStepData implements StepDataInte
     try {
       Reader reader = new InputStreamReader(is);
       try {
-        JSONObject jsonObj = (JSONObject) parser.parse(reader);
-        String lat = (String) jsonObj.get("lat");
-        String lon = (String) jsonObj.get("lon");
-        latLong[0] = lat;
-        latLong[1] = lon;
+        JSONArray jsonArray = (JSONArray) parser.parse(reader);
+        if(jsonArray != null && jsonArray.size() > 0) {
+          JSONObject jsonObj = (JSONObject) jsonArray.get(0);
+          String lat = (String) jsonObj.get("lat");
+          String lon = (String) jsonObj.get("lon");
+          latLong[0] = lat;
+          latLong[1] = lon;
+        }
       } finally {
         reader.close();
       }
@@ -107,12 +107,46 @@ public class NominatimPDIPluginData extends BaseStepData implements StepDataInte
     HttpUriRequest request = new HttpGet(outputURI);
     HttpResponse response =  this.client.execute(request);
     int code = response.getStatusLine().getStatusCode();
-    if(code != 200) {
-      throw new IOException("Request Failed with Status Code " + code);
+    String reason = response.getStatusLine().getReasonPhrase();
+    if(code != 200){
+      throw new IOException("Nominatim Request Failed with Status Code " + code + "\n" + reason);
     }
     return this.packageResponse(response);
   }
 
+  /**
+   * Packages geojson from mapbox to lat long array.
+   *
+   * @param response          The mapbox response
+   * @return                  The lat long array
+   */
+  private String[] packageGeoJson(HttpResponse response) throws IOException, ParseException {
+    String[] latLong = new String[2];
+    JSONParser parser = new JSONParser();
+    InputStream is = response.getEntity().getContent();
+    try {
+      Reader reader = new InputStreamReader(is);
+      try {
+        JSONObject fullObj = (JSONObject) parser.parse(reader);
+        if(fullObj != null){
+          JSONArray jarr = (JSONArray) fullObj.get("features");
+          if(jarr != null && jarr.size() > 0){
+            JSONObject jobj = (JSONObject) jarr.get(0);
+            jarr = (JSONArray) jobj.get("coordinates");
+            if(jarr.size() == 2){
+              latLong[0] = String.valueOf((float)jarr.get(0));
+              latLong[1] = String.valueOf((float)jarr.get(1));
+            }
+          }
+        }
+      } finally {
+        reader.close();
+      }
+    }finally{
+      is.close();
+    }
+    return latLong;
+  }
 
   /**
    * Request data from mapbox
@@ -128,13 +162,21 @@ public class NominatimPDIPluginData extends BaseStepData implements StepDataInte
    * @throws IOException
    */
   public String[] mapBoxRequest(URI uri, String token, String street, String city, String state, String zip)
-          throws InterruptedException, ParseException, URISyntaxException, ClientProtocolException, IOException {
+          throws IOException, ParseException, URISyntaxException, ClientProtocolException, IOException {
     String addr = street;
     addr = addr + " " + city;
     addr = addr.trim() + " " + state;
     addr = addr.trim() + " " + zip;
     addr = addr.trim();
-
-    return this.packageResponse(response);
+    URI mboxUri = new URL(uri.toURL(), String.format("/geocoding/v5/mapbox.places/%s.json", addr)).toURI();
+    mboxUri = new URIBuilder(mboxUri).addParameter("access_token", token).build();
+    HttpUriRequest uriRequest = new HttpGet(mboxUri);
+    HttpResponse response = this.client.execute(uriRequest);
+    int code = response.getStatusLine().getStatusCode();
+    String reason = response.getStatusLine().getReasonPhrase();
+    if(code != 200){
+      throw new IOException("Mapbox Request Failed with Status Code " + code + "\n" + reason);
+    }
+    return this.packageGeoJson(response);
   }
 }

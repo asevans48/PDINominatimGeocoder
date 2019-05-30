@@ -66,6 +66,8 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
   private String zipField = "";
   private String latitudeField = "";
   private String longitudeField = "";
+  private long postMapboxWaitMillis = 1000L;
+  private long postNominatimWaitMillis = 1000L;
   private boolean useMapBoxFallbackIfPresent = true;
   
   private static Class<?> PKG = NominatimPDIPlugin.class; // for i18n purposes, needed by Translator2!!   $NON-NLS-1$
@@ -154,6 +156,22 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
     this.useMapBoxFallbackIfPresent = useMapBoxFallbackIfPresent;
   }
 
+  public long getPostMapboxWaitMillis() {
+    return postMapboxWaitMillis;
+  }
+
+  public void setPostMapboxWaitMillis(long postMapboxWaitMillis) {
+    this.postMapboxWaitMillis = postMapboxWaitMillis;
+  }
+
+  public long getPostNominatimWaitMillis() {
+    return postNominatimWaitMillis;
+  }
+
+  public void setPostNominatimWaitMillis(long postNominatimWaitMillis) {
+    this.postNominatimWaitMillis = postNominatimWaitMillis;
+  }
+
   public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
     readData( stepnode );
   }
@@ -175,6 +193,8 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
     xml.append(XMLHandler.addTagValue("useMapBox", useMapBoxFallbackIfPresent));
     xml.append(XMLHandler.addTagValue("latitudeField", latitudeField));
     xml.append(XMLHandler.addTagValue("longitudeField", longitudeField));
+    xml.append(XMLHandler.addTagValue("postMapboxWaitMillis", postMapboxWaitMillis));
+    xml.append(XMLHandler.addTagValue("postNominatimWaitMillis", postNominatimWaitMillis));
     return xml.toString();
   }
 
@@ -190,6 +210,8 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
       setLatitudeField(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "latitudeField")), ""));
       setLongitudeField(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "longitudeField")), ""));
       setUseMapBoxFallbackIfPresent(Const.NVL(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "useMapBox")), "N").equals("Y"));
+      setPostMapboxWaitMillis(Long.parseLong(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "postMapboxWaitMillis"))));
+      setPostNominatimWaitMillis(Long.parseLong(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "postNominatimWaitMillis"))));
     } catch ( Exception e ) {
       throw new KettleXMLException( "Demo plugin unable to read step info from XML node", e );
     }
@@ -206,6 +228,8 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
     this.zipField = "";
     this.latitudeField = "";
     this.longitudeField = "";
+    this.postMapboxWaitMillis = 1000L;
+    this.postNominatimWaitMillis = 1000L;
   }
 
   public void readRep( Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases ) throws KettleException {
@@ -220,6 +244,8 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
       this.zipField = rep.getStepAttributeString(id_step, "zipField");
       this.latitudeField = rep.getStepAttributeString(id_step, "latitudeField");
       this.longitudeField = rep.getStepAttributeString(id_step, "longitudeField");
+      this.postMapboxWaitMillis = rep.getStepAttributeInteger(id_step, "postMapboxWaitMillis");
+      this.postNominatimWaitMillis = rep.getStepAttributeInteger(id_step, "postNominatimWaitMillis");
     } catch ( Exception e ) {
       throw new KettleException( "Unable to load step from repository", e );
     }
@@ -238,6 +264,8 @@ public class NominatimPDIPluginMeta extends BaseStepMeta implements StepMetaInte
       rep.saveStepAttribute( id_transformation, id_step, "zipField", zipField);
       rep.saveStepAttribute( id_transformation, id_step, "latitudeField", latitudeField);
       rep.saveStepAttribute( id_transformation, id_step, "longitudeField", longitudeField);
+      rep.saveStepAttribute(id_transformation, id_step, "postMapboxWaitMillis", postMapboxWaitMillis);
+      rep.saveStepAttribute(id_transformation, id_step, "postNominatimWaitMillis", postNominatimWaitMillis);
     } catch ( Exception e ) {
       throw new KettleException( "Unable to save step into repository: " + id_step, e );
     }
