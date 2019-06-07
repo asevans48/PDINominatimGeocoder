@@ -1,7 +1,7 @@
 <features xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
 
-    <feature name="nominator-geocoder-pdi" version="1.0-SNAPSHOT">
-        <bundle>mvn:com.si/nominator-geocoder-pdi/1.0-SNAPSHOT</bundle>
+    <feature name="nominatim-geocoder-pdi" version="1.0-SNAPSHOT">
+        <bundle>mvn:com.si/nominatim-geocoder-pdi/1.0-SNAPSHOT</bundle>
     </feature>
 
 </features>

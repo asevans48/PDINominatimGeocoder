@@ -18,7 +18,6 @@
  */
 package com.si;
 
-import net.sf.saxon.functions.Parse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -103,6 +102,7 @@ public class NominatimPDIPluginData extends BaseStepData implements StepDataInte
             .addParameter("street", street)
             .addParameter("state", state)
             .addParameter("postalcode", zip)
+            .addParameter("format", "json")
             .build();
     HttpUriRequest request = new HttpGet(outputURI);
     HttpResponse response =  this.client.execute(request);

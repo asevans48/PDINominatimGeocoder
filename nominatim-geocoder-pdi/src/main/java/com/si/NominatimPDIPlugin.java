@@ -53,8 +53,8 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
    *          The data to initialize
    */
   public boolean init( StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface ) {
-    meta = (NominatimPDIPluginMeta) meta;
-    data = (NominatimPDIPluginData) data;
+    meta = (NominatimPDIPluginMeta) stepMetaInterface;
+    data = (NominatimPDIPluginData) stepDataInterface;
     return super.init( stepMetaInterface, stepDataInterface );
   }
 
@@ -180,11 +180,11 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
    * @return              The updated row
    */
   private Object[] packageRow(String[] latLong, Object[] r, RowMetaInterface rmi){
-    int idx = rmi.indexOfValue(meta.getLatitudeField());
+    int idx = data.outputRowMeta.indexOfValue(meta.getLatitudeField());
     if(idx > -1){
       String lat = latLong[0];
       r[idx] = lat;
-      idx = rmi.indexOfValue(meta.getLongitudeField());
+      idx = data.outputRowMeta.indexOfValue(meta.getLongitudeField());
       if(idx > -1) {
         String lon = latLong[1];
         r[idx] = lon;
@@ -227,10 +227,26 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
   private Object[] getLatLong(Object[] inrow, RowMetaInterface rmi){
     Object[] outrow = this.resizeRow(inrow);
     boolean fallThrough = meta.isUseMapBoxFallbackIfPresent();
-    String cityO = (String) this.extractField(outrow, meta.getCityField(), rmi);
-    String streetO = (String) this.extractField(outrow, meta.getStreetField(), rmi);
-    String stateO = (String) this.extractField(outrow, meta.getStateField(), rmi);
-    Object zipO = this.extractField(outrow, meta.getZipField(), rmi);
+    String cityO = "";
+    if(meta.getCityField() != null && meta.getCityField().trim().length() > 0) {
+      cityO = (String) this.extractField(outrow, meta.getCityField(), rmi);
+    }
+
+    String streetO = "";
+    if(meta.getStreetField() != null && meta.getStreetField().trim().length() >0) {
+      streetO = (String) this.extractField(outrow, meta.getStreetField(), rmi);
+    }
+
+    String stateO = "";
+    if(meta.getStateField() != null && meta.getStateField().trim().length() > 0) {
+      stateO = (String) this.extractField(outrow, meta.getStateField(), rmi);
+    }
+
+    Object zipO = "";
+    if(meta.getZipField() != null && meta.getZipField().trim().length() > 0) {
+      zipO = this.extractField(outrow, meta.getZipField(), rmi);
+    }
+
     if(cityO != null && streetO != null && stateO != null && zipO != null) {
       if(zipO != null && !(zipO instanceof String)){
         zipO = String.valueOf(zipO);
@@ -287,6 +303,8 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
     }
 
     if(first){
+      data = (NominatimPDIPluginData) sdi;
+      meta = (NominatimPDIPluginMeta) smi;
       this.setupProcessor();
     }
 

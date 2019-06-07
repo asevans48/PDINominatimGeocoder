@@ -150,13 +150,13 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
     formLayout.marginWidth = Const.FORM_MARGIN;
     formLayout.marginHeight = Const.FORM_MARGIN;
     shell.setLayout(formLayout);
-    shell.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Shell.Title"));
+    shell.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Shell.Title"));
     int middle = props.getMiddlePct();
     int margin = Const.MARGIN;
 
     // Stepname line
     wlStepname = new Label(shell, SWT.RIGHT);
-    wlStepname.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Stepname.Label"));
+    wlStepname.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Stepname.Label"));
     props.setLook(wlStepname);
     fdlStepname = new FormData();
     fdlStepname.left = new FormAttachment(0, 0);
@@ -176,7 +176,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     // Set the street
     streetName = new Label( shell, SWT.RIGHT );
-    streetName.setText( BaseMessages.getString( PKG, "LibPhonenumberPDIPluginDialog.Fields.FieldName" ) );
+    streetName.setText( BaseMessages.getString( PKG, "NominatimPDIPluginDialog.Fields.Street" ) );
     props.setLook( streetName );
     fdlStreetName = new FormData();
     fdlStreetName.left = new FormAttachment( 0, 0 );
@@ -208,7 +208,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //city
     cityName = new Label( shell, SWT.RIGHT );
-    cityName.setText( BaseMessages.getString( PKG, "LibPhonenumberPDIPluginDialog.Fields.FieldName" ) );
+    cityName.setText( BaseMessages.getString( PKG, "NominatimPDIPluginDialog.Fields.City" ) );
     props.setLook( cityName );
     fdlCityName = new FormData();
     fdlCityName.left = new FormAttachment( 0, 0 );
@@ -239,7 +239,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //state
     stateName = new Label( shell, SWT.RIGHT );
-    stateName.setText( BaseMessages.getString( PKG, "LibPhonenumberPDIPluginDialog.Fields.FieldName" ) );
+    stateName.setText( BaseMessages.getString( PKG, "NominatimPDIPluginDialog.Fields.State" ) );
     props.setLook( stateName );
     fdlStateName = new FormData();
     fdlStateName.left = new FormAttachment( 0, 0 );
@@ -270,7 +270,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //zip
     zipName = new Label( shell, SWT.RIGHT );
-    zipName.setText( BaseMessages.getString( PKG, "LibPhonenumberPDIPluginDialog.Fields.FieldName" ) );
+    zipName.setText( BaseMessages.getString( PKG, "NominatimPDIPluginDialog.Fields.Zip" ) );
     props.setLook( zipName );
     fdlZipName = new FormData();
     fdlZipName.left = new FormAttachment( 0, 0 );
@@ -301,7 +301,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //latitude
     latitudeName = new Label(shell, SWT.RIGHT);
-    latitudeName.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Output.Region"));
+    latitudeName.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Out.Latitude"));
     props.setLook(latitudeName);
     fdlLatitudeName = new FormData();
     fdlLatitudeName.left = new FormAttachment(0, 0);
@@ -320,7 +320,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //longitude
     longitudeName = new Label(shell, SWT.RIGHT);
-    longitudeName.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Output.Region"));
+    longitudeName.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Out.Longitude"));
     props.setLook(longitudeName);
     fdlLongitudeName = new FormData();
     fdlLongitudeName.left = new FormAttachment(0, 0);
@@ -339,7 +339,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //nominatim url
     nominatimName = new Label(shell, SWT.RIGHT);
-    nominatimName.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Output.Region"));
+    nominatimName.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Config.Nominatim"));
     props.setLook(nominatimName);
     fdlNominatimName = new FormData();
     fdlNominatimName.left = new FormAttachment(0, 0);
@@ -358,7 +358,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //nominatim wait
     nominatimWaitName = new Label(shell, SWT.RIGHT);
-    nominatimWaitName.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Output.Region"));
+    nominatimWaitName.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Config.NominatimWait"));
     props.setLook(nominatimWaitName);
     fdlNominatimWaitName = new FormData();
     fdlNominatimWaitName.left = new FormAttachment(0, 0);
@@ -377,7 +377,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //mapboxurl
     mapBoxName = new Label(shell, SWT.RIGHT);
-    mapBoxName.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Output.Region"));
+    mapBoxName.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Config.MapBox"));
     props.setLook(mapBoxName);
     fdlMapBoxName = new FormData();
     fdlMapBoxName.left = new FormAttachment(0, 0);
@@ -396,7 +396,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //mapboxkey
     mapBoxKeyName = new Label(shell, SWT.RIGHT);
-    mapBoxKeyName.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Output.Region"));
+    mapBoxKeyName.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Config.MapBoxKey"));
     props.setLook(mapBoxKeyName);
     fdlMapBoxKeyName = new FormData();
     fdlMapBoxKeyName.left = new FormAttachment(0, 0);
@@ -415,7 +415,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //mapboxwait
     mapBoxWaitName = new Label(shell, SWT.RIGHT);
-    mapBoxWaitName.setText(BaseMessages.getString(PKG, "LibPhonenumberPDIPluginDialog.Output.Region"));
+    mapBoxWaitName.setText(BaseMessages.getString(PKG, "NominatimPDIPluginDialog.Config.MapBoxWait"));
     props.setLook(mapBoxWaitName);
     fdlMapBoxWaitName = new FormData();
     fdlMapBoxWaitName.left = new FormAttachment(0, 0);
@@ -434,7 +434,7 @@ public class NominatimPDIPluginDialog extends BaseStepDialog implements StepDial
 
     //use mapbox fallback
     useMboxName = new Label(shell,SWT.RIGHT);
-    useMboxName.setText(BaseMessages.getString(PKG,"LibPhonenumberPDIPluginDialog.Output.FindMatch"));
+    useMboxName.setText(BaseMessages.getString(PKG,"NominatimPDIPluginDialog.Config.UseMapBox"));
     props.setLook(useMboxName);
     fdlUseMboxName = new FormData();
     fdlUseMboxName.left = new FormAttachment(0, 0);
