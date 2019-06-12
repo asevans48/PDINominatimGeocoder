@@ -165,8 +165,8 @@ public class NominatimPDIPlugin extends BaseStep implements StepInterface {
    */
   private Object[] resizeRow(Object[] r){
     Object[] orow = r.clone();
-    if(r.length < data.outputRowMeta.size()){
-      RowDataUtil.resizeArray(orow, data.outputRowMeta.size());
+    if(orow.length < data.outputRowMeta.size()){
+      orow = RowDataUtil.resizeArray(orow, data.outputRowMeta.size());
     }
     return orow;
   }
